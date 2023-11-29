@@ -17,18 +17,33 @@ func NewTodoService(db *pgxpool.Pool) TodoService {
 	return TodoService{db}
 }
 
-func (t TodoService) GetTodoList() []todoEntity {
+func (t TodoService) GetTodoList(params GetTodoListParams) ([]todoEntity, error) {
 	var todoList []todoEntity
 
-	rows, _ := t.db.Query(context.Background(), "SELECT * FROM todo")
+	limit := params.Limit
+	if limit == 0 {
+		limit = 10
+	}
+
+	rows, err := t.db.Query(context.Background(), "SELECT * FROM todo LIMIT $1 OFFSET $2", limit, params.Offset)
+	defer rows.Close()
+
+	if err != nil {
+		return todoList, err
+	}
 
 	for rows.Next() {
 		var todo todoEntity
 		rows.Scan(&todo.Id, &todo.Title, &todo.Description, &todo.Status, &todo.Created_at, &todo.Updated_at)
 		todoList = append(todoList, todo)
 	}
+	return todoList, err
+}
 
-	return todoList
+func (t TodoService) GetTodoCount() (int, error) {
+	var count int
+	err := t.db.QueryRow(context.Background(), "SELECT COUNT(*) FROM todo").Scan(&count)
+	return count, err
 }
 
 func (t TodoService) GetTodoById(id int) (todoEntity, error) {

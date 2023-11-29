@@ -7,8 +7,9 @@ import (
 )
 
 type SuccessResponse struct {
-	Success bool        `json:"success"`
-	Data    interface{} `json:"data,omitempty"`
+	Success bool                   `json:"success"`
+	Data    interface{}            `json:"data,omitempty"`
+	Meta    map[string]interface{} `json:"meta,omitempty"`
 }
 
 type ErrorResponse struct {
@@ -21,10 +22,15 @@ type ErrorParams struct {
 	Message    string
 }
 
-func JsonSuccess(c *gin.Context, data interface{}) {
+type Meta struct {
+	Data map[string]interface{}
+}
+
+func JsonSuccess(c *gin.Context, data interface{}, meta ...Meta) {
 	c.JSON(http.StatusOK, SuccessResponse{
 		Success: true,
 		Data:    data,
+		Meta:    meta[0].Data,
 	})
 }
 

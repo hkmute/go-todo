@@ -11,7 +11,8 @@ import (
 )
 
 type todoService interface {
-	GetTodoList() []todoEntity
+	GetTodoList(params GetTodoListParams) ([]todoEntity, error)
+	GetTodoCount() (int, error)
 	GetTodoById(id int) (todoEntity, error)
 	InsertTodo(newTodo NewTodo) (todoEntity, error)
 	EditTodoById(id int, editTodo EditTodo) (todoEntity, error)
@@ -34,8 +35,77 @@ func (controller todoController) GetTodoList(c *gin.Context) {
 		return
 	}
 
-	todoList := controller.todoService.GetTodoList()
-	res.JsonSuccess(c, todoList)
+	todoList, err := controller.todoService.GetTodoList(params)
+
+	if err != nil {
+		res.JsonError(c, res.ErrorParams{Message: err.Error()})
+		return
+	}
+
+	count, err := controller.todoService.GetTodoCount()
+
+	if err != nil {
+		res.JsonError(c, res.ErrorParams{Message: err.Error()})
+		return
+	}
+
+	meta := res.Meta{Data: map[string]interface{}{
+		"total":  count,
+		"offset": params.Offset,
+		"limit":  params.Limit,
+	}}
+
+	res.JsonSuccess(c, todoList, meta)
+}
+
+func (controller todoController) GetTodoListWithGoRoutine(c *gin.Context) {
+	var params GetTodoListParams
+	if err := c.ShouldBind(&params); err != nil {
+		errorMessage := appError.Message(err)
+		res.JsonError(c, res.ErrorParams{Message: errorMessage})
+		return
+	}
+
+	todoListChan := make(chan []todoEntity)
+	countChan := make(chan int)
+	errChan := make(chan error)
+
+	go func() {
+		todoList, err := controller.todoService.GetTodoList(params)
+		if err != nil {
+			errChan <- err
+			return
+		}
+		todoListChan <- todoList
+	}()
+
+	go func() {
+		count, err := controller.todoService.GetTodoCount()
+		if err != nil {
+			errChan <- err
+			return
+		}
+		countChan <- count
+	}()
+
+	select {
+	case err := <-errChan:
+		res.JsonError(c, res.ErrorParams{Message: err.Error()})
+		return
+	case todoList := <-todoListChan:
+		select {
+		case err := <-errChan:
+			res.JsonError(c, res.ErrorParams{Message: err.Error()})
+			return
+		case count := <-countChan:
+			meta := res.Meta{Data: map[string]interface{}{
+				"total":  count,
+				"offset": params.Offset,
+				"limit":  params.Limit,
+			}}
+			res.JsonSuccess(c, todoList, meta)
+		}
+	}
 }
 
 func (controller todoController) GetTodoById(c *gin.Context) {

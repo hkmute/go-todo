@@ -1,6 +1,8 @@
 package todo
 
 type GetTodoListParams struct {
+	Offset int `form:"offset" binding:"number"`
+	Limit  int `form:"limit" binding:"number"`
 }
 
 type NewTodo struct {
