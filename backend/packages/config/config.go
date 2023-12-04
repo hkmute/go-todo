@@ -3,8 +3,9 @@ package config
 import "os"
 
 type appConfigStruct struct {
-	Port string
-	Db   db
+	Port      string
+	JwtSecret string
+	Db        db
 }
 
 type db struct {
@@ -19,7 +20,8 @@ var appConfig appConfigStruct
 
 func (c appConfigStruct) Init() {
 	appConfig = appConfigStruct{
-		Port: os.Getenv("PORT"),
+		Port:      os.Getenv("PORT"),
+		JwtSecret: os.Getenv("JWT_SECRET"),
 		Db: db{
 			Host:     os.Getenv("DB_HOST"),
 			Port:     os.Getenv("DB_PORT"),

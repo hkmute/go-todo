@@ -6,13 +6,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type SuccessResponse struct {
+type successResponse struct {
 	Success bool                   `json:"success"`
 	Data    interface{}            `json:"data,omitempty"`
 	Meta    map[string]interface{} `json:"meta,omitempty"`
 }
 
-type ErrorResponse struct {
+type errorResponse struct {
 	Success bool   `json:"success"`
 	Message string `json:"message"`
 }
@@ -27,10 +27,14 @@ type Meta struct {
 }
 
 func JsonSuccess(c *gin.Context, data interface{}, meta ...Meta) {
-	c.JSON(http.StatusOK, SuccessResponse{
+	var metaData map[string]interface{}
+	if len(meta) > 0 {
+		metaData = meta[0].Data
+	}
+	c.JSON(http.StatusOK, successResponse{
 		Success: true,
 		Data:    data,
-		Meta:    meta[0].Data,
+		Meta:    metaData,
 	})
 }
 
@@ -44,7 +48,7 @@ func JsonError(c *gin.Context, err ErrorParams) {
 		message = http.StatusText(code)
 	}
 
-	c.JSON(code, ErrorResponse{
+	c.JSON(code, errorResponse{
 		Success: false,
 		Message: message,
 	})

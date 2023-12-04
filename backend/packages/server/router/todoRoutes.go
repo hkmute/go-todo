@@ -16,10 +16,10 @@ type todoController interface {
 	DeleteTodoById(c *gin.Context)
 }
 
-func todoRoutes(r *gin.Engine, path string) {
+func todoRoutes(r *gin.Engine, path string, handlers ...gin.HandlerFunc) {
 	var controller todoController = todo.NewTodoController(todo.NewTodoService(db.DB.Conn()))
 
-	routes := r.Group(path)
+	routes := r.Group(path, handlers...)
 
 	routes.GET("/", controller.GetTodoList)
 	routes.GET("/go", controller.GetTodoListWithGoRoutine)

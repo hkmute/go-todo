@@ -17,15 +17,15 @@ func NewTodoService(db *pgxpool.Pool) TodoService {
 	return TodoService{db}
 }
 
-func (t TodoService) GetTodoList(params GetTodoListParams) ([]todoEntity, error) {
-	var todoList []todoEntity
+func (service TodoService) GetTodoList(params GetTodoListParams) ([]TodoEntity, error) {
+	var todoList []TodoEntity
 
 	limit := params.Limit
 	if limit == 0 {
 		limit = 10
 	}
 
-	rows, err := t.db.Query(context.Background(), "SELECT * FROM todo LIMIT $1 OFFSET $2", limit, params.Offset)
+	rows, err := service.db.Query(context.Background(), "SELECT * FROM todo LIMIT $1 OFFSET $2", limit, params.Offset)
 	defer rows.Close()
 
 	if err != nil {
@@ -33,28 +33,28 @@ func (t TodoService) GetTodoList(params GetTodoListParams) ([]todoEntity, error)
 	}
 
 	for rows.Next() {
-		var todo todoEntity
+		var todo TodoEntity
 		rows.Scan(&todo.Id, &todo.Title, &todo.Description, &todo.Status, &todo.Created_at, &todo.Updated_at)
 		todoList = append(todoList, todo)
 	}
 	return todoList, err
 }
 
-func (t TodoService) GetTodoCount() (int, error) {
+func (service TodoService) GetTodoCount() (int, error) {
 	var count int
-	err := t.db.QueryRow(context.Background(), "SELECT COUNT(*) FROM todo").Scan(&count)
+	err := service.db.QueryRow(context.Background(), "SELECT COUNT(*) FROM todo").Scan(&count)
 	return count, err
 }
 
-func (t TodoService) GetTodoById(id int) (todoEntity, error) {
-	var todo todoEntity
-	err := t.db.QueryRow(context.Background(), "SELECT * FROM todo WHERE id = $1", id).Scan(&todo.Id, &todo.Title, &todo.Description, &todo.Status, &todo.Created_at, &todo.Updated_at)
+func (service TodoService) GetTodoById(id int) (TodoEntity, error) {
+	var todo TodoEntity
+	err := service.db.QueryRow(context.Background(), "SELECT * FROM todo WHERE id = $1", id).Scan(&todo.Id, &todo.Title, &todo.Description, &todo.Status, &todo.Created_at, &todo.Updated_at)
 	return todo, err
 }
 
-func (t TodoService) InsertTodo(newTodo NewTodo) (todoEntity, error) {
-	var todo todoEntity
-	err := t.db.QueryRow(context.Background(),
+func (service TodoService) InsertTodo(newTodo NewTodo) (TodoEntity, error) {
+	var todo TodoEntity
+	err := service.db.QueryRow(context.Background(),
 		"INSERT INTO todo (title, description, status) VALUES ($1, $2, $3) RETURNING *",
 		newTodo.Title, newTodo.Description, newTodo.Status).Scan(&todo.Id, &todo.Title,
 		&todo.Description, &todo.Status, &todo.Created_at, &todo.Updated_at)
@@ -62,8 +62,8 @@ func (t TodoService) InsertTodo(newTodo NewTodo) (todoEntity, error) {
 	return todo, err
 }
 
-func (t TodoService) EditTodoById(id int, editTodo EditTodo) (todoEntity, error) {
-	var todo todoEntity
+func (service TodoService) EditTodoById(id int, editTodo EditTodo) (TodoEntity, error) {
+	var todo TodoEntity
 
 	sql := "UPDATE todo SET"
 	args := []interface{}{}
@@ -90,13 +90,13 @@ func (t TodoService) EditTodoById(id int, editTodo EditTodo) (todoEntity, error)
 	sql += " updated_at = CURRENT_TIMESTAMP" + fmt.Sprintf(" WHERE id = $%d RETURNING *", i)
 	args = append(args, id)
 
-	err := t.db.QueryRow(context.Background(), sql, args...).Scan(&todo.Id, &todo.Title, &todo.Description, &todo.Status, &todo.Created_at, &todo.Updated_at)
+	err := service.db.QueryRow(context.Background(), sql, args...).Scan(&todo.Id, &todo.Title, &todo.Description, &todo.Status, &todo.Created_at, &todo.Updated_at)
 
 	return todo, err
 }
 
-func (t TodoService) DeleteTodoById(id int) bool {
-	commandTag, err := t.db.Exec(context.Background(), "DELETE FROM todo WHERE id = $1", id)
+func (service TodoService) DeleteTodoById(id int) bool {
+	commandTag, err := service.db.Exec(context.Background(), "DELETE FROM todo WHERE id = $1", id)
 	if commandTag.RowsAffected() == 0 || err != nil {
 		return false
 	}

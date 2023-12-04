@@ -11,11 +11,11 @@ import (
 )
 
 type todoService interface {
-	GetTodoList(params GetTodoListParams) ([]todoEntity, error)
+	GetTodoList(params GetTodoListParams) ([]TodoEntity, error)
 	GetTodoCount() (int, error)
-	GetTodoById(id int) (todoEntity, error)
-	InsertTodo(newTodo NewTodo) (todoEntity, error)
-	EditTodoById(id int, editTodo EditTodo) (todoEntity, error)
+	GetTodoById(id int) (TodoEntity, error)
+	InsertTodo(newTodo NewTodo) (TodoEntity, error)
+	EditTodoById(id int, editTodo EditTodo) (TodoEntity, error)
 	DeleteTodoById(id int) bool
 }
 
@@ -66,7 +66,7 @@ func (controller todoController) GetTodoListWithGoRoutine(c *gin.Context) {
 		return
 	}
 
-	todoListChan := make(chan []todoEntity)
+	todoListChan := make(chan []TodoEntity)
 	countChan := make(chan int)
 	errChan := make(chan error)
 
