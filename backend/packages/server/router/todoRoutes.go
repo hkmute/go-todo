@@ -2,6 +2,7 @@ package router
 
 import (
 	"go-todo/packages/db"
+	"go-todo/packages/middleware"
 	"go-todo/packages/todo"
 
 	"github.com/gin-gonic/gin"
@@ -18,8 +19,9 @@ type todoController interface {
 
 func todoRoutes(r *gin.Engine, path string, handlers ...gin.HandlerFunc) {
 	var controller todoController = todo.NewTodoController(todo.NewTodoService(db.DB.Conn()))
+	authMiddleware := middleware.AuthMiddleware()
 
-	routes := r.Group(path, handlers...)
+	routes := r.Group(path, append(handlers, authMiddleware)...)
 
 	routes.GET("/", controller.GetTodoList)
 	routes.GET("/go", controller.GetTodoListWithGoRoutine)

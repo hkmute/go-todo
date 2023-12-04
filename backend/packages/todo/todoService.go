@@ -34,7 +34,7 @@ func (service TodoService) GetTodoList(params GetTodoListParams) ([]TodoEntity, 
 
 	for rows.Next() {
 		var todo TodoEntity
-		rows.Scan(&todo.Id, &todo.Title, &todo.Description, &todo.Status, &todo.Created_at, &todo.Updated_at)
+		rows.Scan(&todo.Id, &todo.Title, &todo.Description, &todo.Status, &todo.Created_at, &todo.Updated_at, &todo.User_id)
 		todoList = append(todoList, todo)
 	}
 	return todoList, err
@@ -48,16 +48,16 @@ func (service TodoService) GetTodoCount() (int, error) {
 
 func (service TodoService) GetTodoById(id int) (TodoEntity, error) {
 	var todo TodoEntity
-	err := service.db.QueryRow(context.Background(), "SELECT * FROM todo WHERE id = $1", id).Scan(&todo.Id, &todo.Title, &todo.Description, &todo.Status, &todo.Created_at, &todo.Updated_at)
+	err := service.db.QueryRow(context.Background(), "SELECT * FROM todo WHERE id = $1", id).Scan(&todo.Id, &todo.Title, &todo.Description, &todo.Status, &todo.Created_at, &todo.Updated_at, &todo.User_id)
 	return todo, err
 }
 
 func (service TodoService) InsertTodo(newTodo NewTodo) (TodoEntity, error) {
 	var todo TodoEntity
 	err := service.db.QueryRow(context.Background(),
-		"INSERT INTO todo (title, description, status) VALUES ($1, $2, $3) RETURNING *",
-		newTodo.Title, newTodo.Description, newTodo.Status).Scan(&todo.Id, &todo.Title,
-		&todo.Description, &todo.Status, &todo.Created_at, &todo.Updated_at)
+		"INSERT INTO todo (title, description, status, user_id) VALUES ($1, $2, $3, $4) RETURNING *",
+		newTodo.Title, newTodo.Description, newTodo.Status, newTodo.UserId).Scan(&todo.Id, &todo.Title,
+		&todo.Description, &todo.Status, &todo.Created_at, &todo.Updated_at, &todo.User_id)
 
 	return todo, err
 }
@@ -90,7 +90,7 @@ func (service TodoService) EditTodoById(id int, editTodo EditTodo) (TodoEntity, 
 	sql += " updated_at = CURRENT_TIMESTAMP" + fmt.Sprintf(" WHERE id = $%d RETURNING *", i)
 	args = append(args, id)
 
-	err := service.db.QueryRow(context.Background(), sql, args...).Scan(&todo.Id, &todo.Title, &todo.Description, &todo.Status, &todo.Created_at, &todo.Updated_at)
+	err := service.db.QueryRow(context.Background(), sql, args...).Scan(&todo.Id, &todo.Title, &todo.Description, &todo.Status, &todo.Created_at, &todo.Updated_at, &todo.User_id)
 
 	return todo, err
 }
