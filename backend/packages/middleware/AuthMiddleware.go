@@ -15,7 +15,14 @@ import (
 func AuthMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		authHeader := c.Request.Header.Get("Authorization")
-		token := strings.Split(authHeader, "Bearer ")[1]
+		tokenSlice := strings.Split(authHeader, "Bearer ")
+		if len(tokenSlice) < 2 {
+			res.JsonError(c, res.ErrorParams{StatusCode: http.StatusUnauthorized})
+			c.Abort()
+			return
+		}
+
+		token := tokenSlice[1]
 		if token == "" {
 			res.JsonError(c, res.ErrorParams{StatusCode: http.StatusUnauthorized})
 			c.Abort()
@@ -23,7 +30,6 @@ func AuthMiddleware() gin.HandlerFunc {
 		}
 
 		claims, err := util.ParseJwt(token)
-
 		if err != nil {
 			res.JsonError(c, res.ErrorParams{StatusCode: http.StatusUnauthorized})
 			c.Abort()
