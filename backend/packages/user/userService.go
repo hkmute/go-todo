@@ -21,7 +21,12 @@ func NewUserService(db *pgxpool.Pool) UserService {
 func (service UserService) GetUser(params GetUserParams) (AppUserEntity, error) {
 	var user AppUserEntity
 
-	sql := "SELECT id, username FROM app_user WHERE"
+	sql := "SELECT id, username"
+	if params.WithPassword == true {
+		sql += ", password"
+	}
+	sql += " FROM app_user WHERE"
+
 	args := []interface{}{}
 	i := 1
 
@@ -45,7 +50,13 @@ func (service UserService) GetUser(params GetUserParams) (AppUserEntity, error) 
 
 	sql = strings.TrimSuffix(sql, ",")
 
-	err := service.db.QueryRow(context.Background(), sql, args...).Scan(&user.Id, &user.Username)
+	var err error
+	if params.WithPassword == true {
+		err = service.db.QueryRow(context.Background(), sql, args...).Scan(&user.Id, &user.Username, &user.Password)
+	} else {
+		err = service.db.QueryRow(context.Background(), sql, args...).Scan(&user.Id, &user.Username)
+	}
+
 	return user, err
 }
 

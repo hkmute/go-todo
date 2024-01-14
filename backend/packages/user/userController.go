@@ -1,6 +1,7 @@
 package user
 
 import (
+	"go-todo/packages/util"
 	"go-todo/packages/util/res"
 	"net/http"
 
@@ -51,7 +52,7 @@ func (controller userController) Login(c *gin.Context) {
 		return
 	}
 
-	user, err := controller.userService.GetUser(GetUserParams{Username: &loginUser.Username})
+	user, err := controller.userService.GetUser(GetUserParams{Username: &loginUser.Username, WithPassword: true})
 
 	if err != nil {
 		if err == pgx.ErrNoRows {
@@ -60,6 +61,11 @@ func (controller userController) Login(c *gin.Context) {
 		}
 
 		res.JsonError(c, res.ErrorParams{Message: err.Error()})
+		return
+	}
+
+	if util.CheckPasswordHash(loginUser.Password, user.Password) == false {
+		res.JsonError(c, res.ErrorParams{StatusCode: http.StatusUnauthorized, Message: "Invalid username or password"})
 		return
 	}
 

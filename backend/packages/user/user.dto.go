@@ -1,8 +1,9 @@
 package user
 
 type GetUserParams struct {
-	Id       *int    `uri:"id" binding:"omitempty,number"`
-	Username *string `uri:"username" binding:"omitempty"`
+	Id           *int    `uri:"id" binding:"omitempty,number"`
+	Username     *string `uri:"username" binding:"omitempty"`
+	WithPassword bool
 }
 
 type NewUser struct {
