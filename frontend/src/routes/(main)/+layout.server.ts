@@ -10,7 +10,7 @@ export const load: LayoutServerLoad = async ({ fetch, cookies }) => {
 		const result = await getMe();
 
 		if (result.success) {
-			return;
+			return result.data;
 		}
 	}
 	cookies.delete('token', { path: '/' });

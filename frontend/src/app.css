@@ -5,3 +5,7 @@
 body {
   @apply bg-slate-50;
 }
+
+::-webkit-scrollbar {
+  display: none;
+}

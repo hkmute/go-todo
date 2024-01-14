@@ -11,6 +11,6 @@ export const load: LayoutServerLoad = async ({ cookies, fetch }) => {
 		if (result.success) {
 			redirect(303, '/');
 		}
-        cookies.delete('token', {path: '/'});
+		cookies.delete('token', { path: '/' });
 	}
 };
