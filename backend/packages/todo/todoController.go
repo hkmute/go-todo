@@ -13,8 +13,8 @@ import (
 )
 
 type todoService interface {
-	GetTodoList(params GetTodoListParams) ([]TodoEntity, error)
-	GetTodoCount() (int, error)
+	GetTodoList(params GetTodoListParams, userId int) ([]TodoEntity, error)
+	GetTodoCount(userId int) (int, error)
 	GetTodoById(id int) (TodoEntity, error)
 	InsertTodo(newTodo NewTodo) (TodoEntity, error)
 	EditTodoById(id int, editTodo EditTodo) (TodoEntity, error)
@@ -36,78 +36,26 @@ func (controller todoController) GetTodoList(c *gin.Context) {
 		res.JsonError(c, res.ErrorParams{Message: errorMessage})
 		return
 	}
+	user := c.MustGet("user").(user.AppUserEntity)
+	userId := int(user.Id)
 
-	todoList, err := controller.todoService.GetTodoList(params)
-
-	if err != nil {
-		res.JsonError(c, res.ErrorParams{Message: err.Error()})
-		return
-	}
-
-	count, err := controller.todoService.GetTodoCount()
+	todoList, err := controller.todoService.GetTodoList(params, userId)
 
 	if err != nil {
 		res.JsonError(c, res.ErrorParams{Message: err.Error()})
 		return
 	}
 
-	meta := res.Meta{Data: map[string]interface{}{
-		"total":  count,
-		"offset": params.Offset,
-		"limit":  params.Limit,
-	}}
-
-	res.JsonSuccess(c, todoList, meta)
-}
-
-func (controller todoController) GetTodoListWithGoRoutine(c *gin.Context) {
-	var params GetTodoListParams
-	if err := c.ShouldBind(&params); err != nil {
-		errorMessage := appError.Message(err)
-		res.JsonError(c, res.ErrorParams{Message: errorMessage})
-		return
-	}
-
-	todoListChan := make(chan []TodoEntity)
-	countChan := make(chan int)
-	errChan := make(chan error)
-
-	go func() {
-		todoList, err := controller.todoService.GetTodoList(params)
-		if err != nil {
-			errChan <- err
-			return
-		}
-		todoListChan <- todoList
-	}()
-
-	go func() {
-		count, err := controller.todoService.GetTodoCount()
-		if err != nil {
-			errChan <- err
-			return
-		}
-		countChan <- count
-	}()
-
-	select {
-	case err := <-errChan:
+	if err != nil {
 		res.JsonError(c, res.ErrorParams{Message: err.Error()})
 		return
-	case todoList := <-todoListChan:
-		select {
-		case err := <-errChan:
-			res.JsonError(c, res.ErrorParams{Message: err.Error()})
-			return
-		case count := <-countChan:
-			meta := res.Meta{Data: map[string]interface{}{
-				"total":  count,
-				"offset": params.Offset,
-				"limit":  params.Limit,
-			}}
-			res.JsonSuccess(c, todoList, meta)
-		}
 	}
+
+	if todoList == nil {
+		todoList = []TodoEntity{}
+	}
+
+	res.JsonSuccess(c, todoList)
 }
 
 func (controller todoController) GetTodoById(c *gin.Context) {

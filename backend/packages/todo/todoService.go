@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -17,15 +18,17 @@ func NewTodoService(db *pgxpool.Pool) TodoService {
 	return TodoService{db}
 }
 
-func (service TodoService) GetTodoList(params GetTodoListParams) ([]TodoEntity, error) {
+func (service TodoService) GetTodoList(params GetTodoListParams, userId int) ([]TodoEntity, error) {
 	var todoList []TodoEntity
 
-	limit := params.Limit
-	if limit == 0 {
-		limit = 10
+	var rows pgx.Rows
+	var err error
+	if params.Status == "" {
+		rows, err = service.db.Query(context.Background(), "SELECT * FROM todo WHERE user_id = $1", userId)
+	} else {
+		rows, err = service.db.Query(context.Background(), "SELECT * FROM todo WHERE user_id = $1 AND status = $2", userId, params.Status)
 	}
 
-	rows, err := service.db.Query(context.Background(), "SELECT * FROM todo LIMIT $1 OFFSET $2", limit, params.Offset)
 	defer rows.Close()
 
 	if err != nil {
@@ -40,9 +43,9 @@ func (service TodoService) GetTodoList(params GetTodoListParams) ([]TodoEntity, 
 	return todoList, err
 }
 
-func (service TodoService) GetTodoCount() (int, error) {
+func (service TodoService) GetTodoCount(userId int) (int, error) {
 	var count int
-	err := service.db.QueryRow(context.Background(), "SELECT COUNT(*) FROM todo").Scan(&count)
+	err := service.db.QueryRow(context.Background(), "SELECT COUNT(*) FROM todo where user_id = $1", userId).Scan(&count)
 	return count, err
 }
 

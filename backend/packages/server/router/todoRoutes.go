@@ -10,7 +10,6 @@ import (
 
 type todoController interface {
 	GetTodoList(c *gin.Context)
-	GetTodoListWithGoRoutine(c *gin.Context)
 	GetTodoById(c *gin.Context)
 	PostTodo(c *gin.Context)
 	PutTodoById(c *gin.Context)
@@ -24,7 +23,6 @@ func todoRoutes(r *gin.Engine, path string, handlers ...gin.HandlerFunc) {
 	routes := r.Group(path, append(handlers, authMiddleware)...)
 
 	routes.GET("/", controller.GetTodoList)
-	routes.GET("/go", controller.GetTodoListWithGoRoutine)
 	routes.GET("/:id", controller.GetTodoById)
 	routes.POST("/", controller.PostTodo)
 	routes.PUT("/:id", controller.PutTodoById)

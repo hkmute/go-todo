@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { enhance } from '$app/forms';
-	import apiClient from '$lib/api/client';
 	import ErrorMessage from '$lib/components/ErrorMessage.svelte';
 	import Button from '$lib/components/button/Button.svelte';
 	import Input from '$lib/components/input/Input.svelte';
+	import PasswordInput from '$lib/components/input/PasswordInput.svelte';
 	import type { ActionData } from './$types';
 
 	export let form: ActionData;
@@ -16,7 +16,6 @@
 		<h1 class="pb-10 text-center text-3xl font-semibold">Register</h1>
 		<form class="flex flex-col gap-2" method="POST" use:enhance={() => {
 			return async ({ result, update }) => {
-				console.log('type', result.type);
 				if (result.type === 'redirect') {
 					alert('Registration successful!');
 				}
@@ -24,8 +23,8 @@
 			};
 		}}>
 			<Input label="Username" name="username" />
-			<Input label="Password" name="password" type="password" required />
-			<Input label="Confirm Password" name="confirm-password" type="password" required />
+			<PasswordInput label="Password" name="password" required />
+			<PasswordInput label="Confirm Password" name="confirm-password" required />
 			<div class="whitespace-pre-wrap">
 				{#if form?.message}
 					<ErrorMessage>

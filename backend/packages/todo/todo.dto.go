@@ -1,8 +1,7 @@
 package todo
 
 type GetTodoListParams struct {
-	Offset int `form:"offset" binding:"number"`
-	Limit  int `form:"limit" binding:"number"`
+	Status string `form:"status" binding:"omitempty,oneof=backlog pending in-progress done"`
 }
 
 type NewTodo struct {

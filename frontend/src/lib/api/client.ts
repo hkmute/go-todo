@@ -12,6 +12,7 @@ type ApiErrorResponse = {
 
 class ApiClient {
 	private baseUrl: string = PUBLIC_API_HOST;
+	private token: string | null = null;
 
 	constructor(private appFetch: typeof fetch = fetch) {}
 
@@ -20,10 +21,15 @@ class ApiClient {
 			const fetchUrl = new URL(url, this.baseUrl);
 			if (params) {
 				Object.keys(params).forEach((key) =>
-					fetchUrl.searchParams.append(key, JSON.stringify(params[key]))
+					fetchUrl.searchParams.append(key, params[key] as string)
 				);
 			}
-			const res = await this.appFetch(fetchUrl.toString());
+
+			const res = await this.appFetch(fetchUrl, {
+				headers: {
+					Authorization: this.token ? `Bearer ${this.token}` : ''
+				}
+			});
 			if (!res.ok) {
 				return res.json() as Promise<ApiErrorResponse>;
 			}
@@ -42,6 +48,7 @@ class ApiClient {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
+					Authorization: this.token ? `Bearer ${this.token}` : ''
 				},
 				body: JSON.stringify(body)
 			});
@@ -63,6 +70,7 @@ class ApiClient {
 				method: 'PUT',
 				headers: {
 					'Content-Type': 'application/json',
+					Authorization: this.token ? `Bearer ${this.token}` : ''
 				},
 				body: JSON.stringify(body)
 			});
@@ -85,6 +93,7 @@ class ApiClient {
 				method: 'DELETE',
 				headers: {
 					'Content-Type': 'application/json',
+					Authorization: this.token ? `Bearer ${this.token}` : ''
 				}
 			});
 
@@ -101,6 +110,13 @@ class ApiClient {
 
 	setFetch(appFetch: typeof fetch) {
 		this.appFetch = appFetch;
+	}
+
+	setToken(token: string | null) {
+		if (typeof window === 'undefined') {
+			throw new Error('Cannot set token on server side');
+		}
+		this.token = token;
 	}
 }
 

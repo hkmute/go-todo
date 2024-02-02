@@ -1,7 +1,6 @@
 <script lang="ts">
 	export let name: string;
 	export let label: string;
-	export let value: string = '';
 	export let required: boolean = false;
 </script>
 
@@ -9,5 +8,5 @@
 	<label for={name}>
 		{label}
 	</label>
-	<input class="rounded-lg bg-slate-50 px-3 py-2" id={name} {name} bind:value {required} />
+	<input class="rounded-lg bg-slate-50 px-3 py-2" id={name} {name} type="password" {required} />
 </div>

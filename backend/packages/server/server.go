@@ -1,6 +1,7 @@
 package server
 
 import (
+	"go-todo/packages/middleware"
 	"go-todo/packages/server/router"
 	"go-todo/packages/util/res"
 
@@ -10,7 +11,12 @@ import (
 func Run() {
 	r := gin.New()
 
-	r.Use(gin.Logger(),
+	// r.Use(cors.Default())
+	// r.Use(middleware.CorsMiddleware())
+
+	r.Use(
+		middleware.CorsMiddleware(),
+		gin.Logger(),
 		gin.CustomRecovery(func(c *gin.Context, err interface{}) {
 			if err, ok := err.(error); ok {
 				res.JsonError(c, res.ErrorParams{Message: err.Error()})

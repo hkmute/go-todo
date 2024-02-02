@@ -8,9 +8,8 @@ export const load: LayoutServerLoad = async ({ fetch, cookies }) => {
 	const token = cookies.get('token');
 	if (token) {
 		const result = await getMe();
-
 		if (result.success) {
-			return result.data;
+			return { user: { token, ...result.data } };
 		}
 	}
 	cookies.delete('token', { path: '/' });
