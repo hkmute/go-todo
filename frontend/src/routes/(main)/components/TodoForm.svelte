@@ -5,13 +5,11 @@
 	import Select from '$lib/components/input/Select.svelte';
 	import { enhance } from '$app/forms';
 	import { createEventDispatcher } from 'svelte';
-	import type { ActionData } from '../$types';
 	import type { Todo, TodoStatus } from '$lib/types/todo';
 
 	export let open: boolean = false;
 	export let defaultStatus: TodoStatus;
 	export let selectedTodo: Todo | null;
-	export let form: ActionData;
 
 	let formData = {
 		title: '',

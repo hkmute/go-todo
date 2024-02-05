@@ -46,11 +46,6 @@ func (controller todoController) GetTodoList(c *gin.Context) {
 		return
 	}
 
-	if err != nil {
-		res.JsonError(c, res.ErrorParams{Message: err.Error()})
-		return
-	}
-
 	if todoList == nil {
 		todoList = []TodoEntity{}
 	}

@@ -3,12 +3,16 @@
 	import Button from '$lib/components/button/Button.svelte';
 	import todoStore from '$lib/stores/todoStore';
 	import type { Todo } from '$lib/types/todo';
-	import type { ActionData, PageData } from './$types';
+	import { onMount } from 'svelte';
+	import type { PageData } from './$types';
 	import TodoForm from './components/TodoForm.svelte';
 	import TodoList from './components/TodoList.svelte';
 
 	export let data: PageData;
-	export let form: ActionData;
+
+	$: todoStore.update((store) => {
+		return { ...store, todoLists: data.todoList };
+	});
 
 	let open = false;
 	let selectedTodo: Todo | null;
@@ -41,33 +45,32 @@
 			on:toggle={handleToggle}
 			title="Backlog"
 			color="gray"
-			items={data.todoList.backlog}
+			items={$todoStore.todoLists.backlog}
 			status="backlog"
 		/>
 		<TodoList
 			on:toggle={handleToggle}
 			title="Pending"
 			color="red"
-			items={data.todoList.pending}
+			items={$todoStore.todoLists.pending}
 			status="pending"
 		/>
 		<TodoList
 			on:toggle={handleToggle}
 			title="In Progress"
 			color="yellow"
-			items={data.todoList.inProgress}
+			items={$todoStore.todoLists['in-progress']}
 			status="in-progress"
 		/>
 		<TodoList
 			on:toggle={handleToggle}
 			title="Done"
 			color="green"
-			items={data.todoList.done}
+			items={$todoStore.todoLists.done}
 			status="done"
 		/>
 		<TodoForm
 			{open}
-			{form}
 			on:toggle={handleToggle}
 			defaultStatus={$todoStore.defaultStatus}
 			{selectedTodo}

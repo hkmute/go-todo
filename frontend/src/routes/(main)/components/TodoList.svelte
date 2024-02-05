@@ -4,22 +4,49 @@
 	import PlusIcon from '$lib/components/icon/PlusIcon.svelte';
 	import type { Todo, TodoStatus } from '$lib/types/todo';
 	import todoStore from '$lib/stores/todoStore';
+	import { crossfade } from 'svelte/transition';
+	import { flip } from 'svelte/animate';
 
 	export let title: string;
 	export let color: 'gray' | 'red' | 'yellow' | 'green';
 	export let items: Todo[];
 	export let status: TodoStatus;
 
+	let scrolledY = 0;
+	let dropPosition = items.length;
+
 	const dispatch = createEventDispatcher();
+	const [send, receive] = crossfade({});
 
 	const handleOpen = () => {
 		todoStore.update((store) => {
 			return {
 				...store,
-				defaultStatus: status,
-			}
+				defaultStatus: status
+			};
 		});
 		dispatch('toggle');
+	};
+
+	const handleDrop = (e: DragEvent) => {
+		if (!e.dataTransfer) return;
+		const todo = JSON.parse(e.dataTransfer.getData('application/json'));
+		todoStore.moveTodo(todo, status, dropPosition);
+	};
+
+	const handleDragover = (e: DragEvent) => {
+		const currentTarget = e.currentTarget as HTMLDivElement;
+		scrolledY = currentTarget.scrollTop;
+	};
+
+	const handleDragoverItem = (index: number) => (e: DragEvent) => {
+		const target = e.target as HTMLDivElement;
+		const middlePoint = target.offsetTop + target.offsetHeight / 2;
+		if (e.clientY + scrolledY > middlePoint) {
+			dropPosition = index + 1;
+		} else {
+			dropPosition = index;
+		}
 	};
 
 	const colors = {
@@ -42,9 +69,23 @@
 			<PlusIcon size={16} />
 		</button>
 	</div>
-	<div class="flex flex-col gap-4 overflow-auto px-4 py-4">
-		{#each items as todo}
-			<TodoCard todo={todo} on:toggle />
+	<div
+		class="flex h-full flex-col overflow-auto px-4 py-2"
+		role="list"
+		on:drop={handleDrop}
+		on:dragover|preventDefault={handleDragover}
+	>
+		{#each items as todo, index (todo.id)}
+			<div
+				class="py-2"
+				role="listitem"
+				on:dragover|preventDefault={handleDragoverItem(index)}
+				animate:flip={{ duration: 300 }}
+				in:receive={{ key: todo.id }}
+				out:send={{ key: todo.id }}
+			>
+				<TodoCard {todo} on:toggle />
+			</div>
 		{/each}
 	</div>
 </div>

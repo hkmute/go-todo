@@ -13,6 +13,12 @@
 		dispatch('toggle', { todo });
 	};
 
+	const handleDragStart = (e: DragEvent) => {
+		if (e.dataTransfer) {
+			e.dataTransfer.setData('application/json', JSON.stringify(todo));
+		}
+	};
+
 	const handleDelete = async () => {
 		await deleteTodo({ id: todo.id });
 		invalidate('todo:list');
@@ -20,8 +26,10 @@
 </script>
 
 <button
-	class="block flex-1 rounded-2xl bg-indigo-50/65 p-4 text-left transition-colors duration-100 hover:bg-indigo-50/100"
+	class="block w-full rotate-0 rounded-2xl bg-indigo-50/65 p-4 text-left transition-colors duration-100 hover:bg-indigo-50/100"
+	draggable="true"
 	on:click={handleClick}
+	on:dragstart={handleDragStart}
 >
 	<div class="flex items-center justify-between">
 		<div>{todo.title}</div>
