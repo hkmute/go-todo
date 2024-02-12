@@ -1,15 +1,16 @@
 import type { Todo, TodoStatus } from '$lib/types/todo';
 import apiClient from '../client';
 
-type CreateTodoParams = {
+type UpdateTodoParams = {
 	id: number;
 	title: string;
 	description?: string;
 	status: TodoStatus;
+	itemOrder: number;
 };
 
-const createTodo = async ({ id, title, description, status }: CreateTodoParams) => {
-	return apiClient.put<Todo>(`/todo/${id}`, { title, description, status });
+const createTodo = async ({ id, title, description, status, itemOrder }: UpdateTodoParams) => {
+	return apiClient.put<Todo>(`/todo/${id}`, { title, description, status, itemOrder });
 };
 
 export default createTodo;

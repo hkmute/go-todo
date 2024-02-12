@@ -4,6 +4,7 @@ export type Todo = {
 	description: string;
 	status: TodoStatus;
 	userId: number;
+	itemOrder: number;
 	createdAt: string;
 	updatedAt: string;
 };

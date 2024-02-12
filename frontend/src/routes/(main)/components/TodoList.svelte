@@ -6,6 +6,7 @@
 	import todoStore from '$lib/stores/todoStore';
 	import { crossfade } from 'svelte/transition';
 	import { flip } from 'svelte/animate';
+	import apiClient from '$lib/api/client';
 
 	export let title: string;
 	export let color: 'gray' | 'red' | 'yellow' | 'green';
@@ -30,8 +31,12 @@
 
 	const handleDrop = (e: DragEvent) => {
 		if (!e.dataTransfer) return;
-		const todo = JSON.parse(e.dataTransfer.getData('application/json'));
+		const todo = JSON.parse(e.dataTransfer.getData('application/json')) as Todo;
 		todoStore.moveTodo(todo, status, dropPosition);
+		apiClient.put('?/edit', {
+			...todo,
+			itemOrder: $todoStore.todoLists[todo.status][dropPosition - 1].itemOrder + 1
+		});
 	};
 
 	const handleDragover = (e: DragEvent) => {
