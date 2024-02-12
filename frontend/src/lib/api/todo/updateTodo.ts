@@ -9,8 +9,8 @@ type UpdateTodoParams = {
 	itemOrder: number;
 };
 
-const createTodo = async ({ id, title, description, status, itemOrder }: UpdateTodoParams) => {
+const updateTodo = async ({ id, title, description, status, itemOrder }: UpdateTodoParams) => {
 	return apiClient.put<Todo>(`/todo/${id}`, { title, description, status, itemOrder });
 };
 
-export default createTodo;
+export default updateTodo;

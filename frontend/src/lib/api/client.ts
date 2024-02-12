@@ -18,7 +18,7 @@ class ApiClient {
 
 	get = async <TData = undefined>(url: string, params?: Record<string, unknown>) => {
 		try {
-			const fetchUrl = new URL(url, this.baseUrl);
+			const fetchUrl = url.startsWith('http') ? new URL(url) : new URL(url, this.baseUrl);
 			if (params) {
 				Object.keys(params).forEach((key) =>
 					fetchUrl.searchParams.append(key, params[key] as string)
@@ -43,7 +43,7 @@ class ApiClient {
 
 	post = async <TData = undefined>(url: string, body?: Record<string, unknown>) => {
 		try {
-			const fetchUrl = new URL(url, this.baseUrl);
+			const fetchUrl = url.startsWith('http') ? new URL(url) : new URL(url, this.baseUrl);
 			const res = await this.appFetch(fetchUrl, {
 				method: 'POST',
 				headers: {
@@ -65,7 +65,7 @@ class ApiClient {
 
 	put = async <TData = undefined>(url: string, body?: Record<string, unknown>) => {
 		try {
-			const fetchUrl = new URL(url, this.baseUrl);
+			const fetchUrl = url.startsWith('http') ? new URL(url) : new URL(url, this.baseUrl);
 			const res = await this.appFetch(fetchUrl, {
 				method: 'PUT',
 				headers: {
@@ -88,7 +88,7 @@ class ApiClient {
 
 	delete = async <TData = undefined>(url: string) => {
 		try {
-			const fetchUrl = new URL(url, this.baseUrl);
+			const fetchUrl = url.startsWith('http') ? new URL(url) : new URL(url, this.baseUrl);
 			const res = await this.appFetch(fetchUrl, {
 				method: 'DELETE',
 				headers: {
