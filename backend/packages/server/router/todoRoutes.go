@@ -13,6 +13,7 @@ type todoController interface {
 	GetTodoById(c *gin.Context)
 	PostTodo(c *gin.Context)
 	PutTodoById(c *gin.Context)
+	ReorderTodoById(c *gin.Context)
 	DeleteTodoById(c *gin.Context)
 }
 
@@ -26,5 +27,6 @@ func todoRoutes(r *gin.Engine, path string, handlers ...gin.HandlerFunc) {
 	routes.GET("/:id", controller.GetTodoById)
 	routes.POST("/", controller.PostTodo)
 	routes.PUT("/:id", controller.PutTodoById)
+	routes.PUT("/:id/reorder", controller.ReorderTodoById)
 	routes.DELETE("/:id", controller.DeleteTodoById)
 }

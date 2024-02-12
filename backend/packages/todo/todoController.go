@@ -18,6 +18,7 @@ type todoService interface {
 	GetTodoById(id int) (TodoEntity, error)
 	InsertTodo(newTodo NewTodo) (TodoEntity, error)
 	EditTodoById(id int, editTodo EditTodo) (TodoEntity, error)
+	ReorderTodoById(id int, reorderDto ReorderTodo) (TodoEntity, error)
 	DeleteTodoById(id int) bool
 }
 
@@ -133,6 +134,52 @@ func (controller todoController) PutTodoById(c *gin.Context) {
 	res.JsonError(c, res.ErrorParams{StatusCode: http.StatusUnauthorized})
 }
 
+func (controller todoController) ReorderTodoById(c *gin.Context) {
+	if appUser, exists := c.Get("user"); exists {
+		var uri _type.Id
+		var reorderDto ReorderTodo
+		appUser := appUser.(user.AppUserEntity)
+
+		if err := c.ShouldBindUri(&uri); err != nil {
+			res.JsonError(c, res.ErrorParams{StatusCode: http.StatusNotFound})
+			return
+		}
+		if err := c.ShouldBind(&reorderDto); err != nil {
+			errorMessage := appError.Message(err)
+			res.JsonError(c, res.ErrorParams{Message: errorMessage})
+			return
+		}
+
+		toBeEdited, err := controller.todoService.GetTodoById(uri.Id)
+
+		if err != nil || toBeEdited.User_id != int(appUser.Id) {
+			res.JsonError(c, res.ErrorParams{StatusCode: http.StatusUnauthorized})
+			return
+		}
+
+		if reorderDto.ItemOrder <= 0 {
+			errorMessage := "Invalid order"
+			res.JsonError(c, res.ErrorParams{Message: errorMessage})
+			return
+		}
+
+		if (reorderDto.ItemOrder == int(toBeEdited.Item_order.Int64)) && reorderDto.Status == toBeEdited.Status {
+			res.JsonSuccess(c, toBeEdited) // TODO: update status code to 204 not modified
+			return                         // No need to perform reorder action
+		}
+
+		todo, err := controller.todoService.ReorderTodoById(uri.Id, reorderDto)
+		if err != nil {
+			res.JsonError(c, res.ErrorParams{Message: err.Error()})
+			return
+		}
+
+		res.JsonSuccess(c, todo)
+		return
+	}
+	res.JsonError(c, res.ErrorParams{StatusCode: http.StatusUnauthorized})
+}
+
 func (controller todoController) DeleteTodoById(c *gin.Context) {
 	if appUser, exists := c.Get("user"); exists {
 		var uri _type.Id
@@ -143,8 +190,8 @@ func (controller todoController) DeleteTodoById(c *gin.Context) {
 			return
 		}
 
-		toBeEdited, err := controller.todoService.GetTodoById(uri.Id)
-		if err != nil || toBeEdited.User_id != int(appUser.Id) {
+		toBeDeleted, err := controller.todoService.GetTodoById(uri.Id)
+		if err != nil || toBeDeleted.User_id != int(appUser.Id) {
 			res.JsonError(c, res.ErrorParams{StatusCode: http.StatusUnauthorized})
 			return
 		}
