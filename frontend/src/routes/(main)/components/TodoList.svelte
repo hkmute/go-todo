@@ -8,6 +8,7 @@
 	import { flip } from 'svelte/animate';
 	import apiClient from '$lib/api/client';
 	import updateTodo from '$lib/api/todo/updateTodo';
+	import reorderTodo from '$lib/api/todo/reorderTodo';
 
 	export let title: string;
 	export let color: 'gray' | 'red' | 'yellow' | 'green';
@@ -34,8 +35,8 @@
 		if (!e.dataTransfer) return;
 		const todo = JSON.parse(e.dataTransfer.getData('application/json')) as Todo;
 		todoStore.moveTodo(todo, status, dropPosition);
-		updateTodo({
-			...todo,
+		reorderTodo({
+			id: todo.id,
 			status,
 			itemOrder: $todoStore.todoLists[todo.status][dropPosition - 1].itemOrder + 1
 		});

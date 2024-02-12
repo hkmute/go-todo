@@ -22,8 +22,7 @@ export const actions = {
 		const title = data.get('title') as string;
 		const description = data.get('description') as string | undefined;
 		const status = data.get('status') as TodoStatus;
-		const itemOrder = parseInt(data.get('itemOrder') as string);
-		const result = await updateTodo({ id, title, description, status, itemOrder });
+		const result = await updateTodo({ id, title, description, status });
 		if (result.success) {
 			return result;
 		}
