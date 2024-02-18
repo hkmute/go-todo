@@ -35,10 +35,11 @@
 		if (!e.dataTransfer) return;
 		const todo = JSON.parse(e.dataTransfer.getData('application/json')) as Todo;
 		todoStore.moveTodo(todo, status, dropPosition);
+		const prevTodo = $todoStore.todoLists[todo.status][dropPosition - 1];
 		reorderTodo({
 			id: todo.id,
 			status,
-			itemOrder: $todoStore.todoLists[todo.status][dropPosition - 1].itemOrder + 1
+			itemOrder: (prevTodo?.itemOrder ?? 0) + 1
 		});
 	};
 
