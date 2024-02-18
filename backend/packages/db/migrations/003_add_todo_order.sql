@@ -1,6 +1,6 @@
 -- Write your migrate up statements here
 
-ALTER TABLE todo ADD COLUMN item_order INTEGER UNSIGNED;
+ALTER TABLE todo ADD COLUMN item_order INTEGER;
 
 ---- create above / drop below ----
 
