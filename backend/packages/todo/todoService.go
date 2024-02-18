@@ -120,8 +120,8 @@ func (service TodoService) ReorderTodoById(id int, reorderDto ReorderTodo) (Todo
 		"SET item_order = $1, status = $2 " +
 		"WHERE id = $3 " +
 		"RETURNING * " +
-		") " +
-		",UpdatedItems AS (" +
+		"), " +
+		"UpdatedItems AS (" +
 		"UPDATE todo AS t " +
 		"SET item_order = t.item_order + 1 " +
 		"FROM UpdatedOrder " +
@@ -130,10 +130,7 @@ func (service TodoService) ReorderTodoById(id int, reorderDto ReorderTodo) (Todo
 		"AND t.item_order >= UpdatedOrder.item_order " +
 		"RETURNING t.*" +
 		") " +
-		"SELECT * FROM UpdatedOrder " +
-		"UNION ALL " +
-		"SELECT * FROM UpdatedItems " +
-		"LIMIT 1;"
+		"SELECT * FROM UpdatedOrder;"
 
 	// Execute the SQL query
 	err := service.db.QueryRow(context.Background(), sql,
