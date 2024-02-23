@@ -17,3 +17,8 @@ type EditTodo struct {
 	Status      string  `form:"status" binding:"omitempty,oneof=backlog pending in-progress done"`
 	UserId      int
 }
+
+type ReorderTodo struct {
+	Status    string `form:"status" binding:"oneof=backlog pending in-progress done"`
+	ItemOrder int    `form:"itemOrder"`
+}
